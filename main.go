@@ -72,7 +72,7 @@ func main() {
 				learn.Learn(n, ins, []float64{ar, ag, ab}, *LearnRate)
 			}
 		}
-		fmt.Printf("finished iteration %d/%d    \r", i+1, Iterations)
+		fmt.Printf("finished iteration %d/%d    \r", i+1, *Iterations)
 	}
 
 	fmt.Println("\ndone! generating output image...")
@@ -108,7 +108,7 @@ func main() {
 		}
 
 		img = newImg
-		fmt.Printf("finished iteration %d/%d    \r", i+1, OutGenerations)
+		fmt.Printf("finished iteration %d/%d    \r", i+1, *OutGenerations)
 	}
 
 	out, err := os.Create(*Out)
