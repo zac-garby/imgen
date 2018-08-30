@@ -36,6 +36,9 @@ var (
 
 	// Out is the name of the output file
 	Out = flag.String("out", "out.png", "the name of the output file")
+
+	// NeighbourRadius is the radius inside which a pixel is considered a neighbour
+	NeighbourRadius = flag.Int("n-rad", 2, "the radius inside which a pixel is considered a neighbour")
 )
 
 func main() {
@@ -55,7 +58,7 @@ func main() {
 
 	bounds := m.Bounds()
 
-	n := neural.NewNetwork(8*3, []int{16, 16, 3})
+	n := neural.NewNetwork(neighbourNum()*3, []int{16, 16, 3})
 	n.RandomizeSynapses()
 
 	fmt.Println("started training...")
@@ -133,23 +136,22 @@ func at(m image.Image, bounds image.Rectangle, x, y int) (r float64, g float64, 
 }
 
 func neighbours(m image.Image, bounds image.Rectangle, x, y int) []float64 {
-	c0r, c0g, c0b := at(m, bounds, x-1, y-1)
-	c1r, c1g, c1b := at(m, bounds, x, y-1)
-	c2r, c2g, c2b := at(m, bounds, x+1, y-1)
-	c3r, c3g, c3b := at(m, bounds, x-1, y)
-	c4r, c4g, c4b := at(m, bounds, x+1, y)
-	c5r, c5g, c5b := at(m, bounds, x-1, y+1)
-	c6r, c6g, c6b := at(m, bounds, x, y+1)
-	c7r, c7g, c7b := at(m, bounds, x+1, y+1)
+	neighbours := []float64{}
 
-	return []float64{
-		c0r, c0g, c0b,
-		c1r, c1g, c1b,
-		c2r, c2g, c2b,
-		c3r, c3g, c3b,
-		c4r, c4g, c4b,
-		c5r, c5g, c5b,
-		c6r, c6g, c6b,
-		c7r, c7g, c7b,
+	for nx := x - *NeighbourRadius; nx < x+*NeighbourRadius+1; nx++ {
+		for ny := y - *NeighbourRadius; ny < y+*NeighbourRadius+1; ny++ {
+			if nx == x && ny == y {
+				continue
+			}
+
+			r, g, b := at(m, bounds, nx, ny)
+			neighbours = append(neighbours, r, g, b)
+		}
 	}
+
+	return neighbours
+}
+
+func neighbourNum() int {
+	return *NeighbourRadius**NeighbourRadius*4 + *NeighbourRadius*4
 }
