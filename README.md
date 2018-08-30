@@ -22,7 +22,3 @@ imgen -help
 # assuming you have a file called `ref.png` and the default options are okay:
 imgen
 ```
-
-## Possible improvements
-
- - Don't just use nearest neighbours — let user choose the neighbour radius
