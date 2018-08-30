@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"image"
 	"image/color"
@@ -14,27 +15,35 @@ import (
 	"github.com/NOX73/go-neural/learn"
 )
 
-const (
+var (
 	// Iterations is the number of training iterations to do
-	Iterations = 100
+	Iterations = flag.Int("train-iters", 200, "the amount of training iterations")
 
 	// OutGenerations is the number of output iterations to do
-	OutGenerations = 2
+	OutGenerations = flag.Int("out-iters", 8, "the amout of output iterations")
 
 	// LearnRate is the rate at which the network learns
-	LearnRate = 0.1
+	LearnRate = flag.Float64("rate", 0.1, "the speed at which the network learns")
 
 	// OutWidth is the width of the generated image
-	OutWidth = 16
+	OutWidth = flag.Int("width", 32, "the width of the generated image")
 
 	// OutHeight is the height of the generated image
-	OutHeight = 16
+	OutHeight = flag.Int("height", 32, "the height of the generated image")
+
+	// In is the name of the input file
+	In = flag.String("in", "ref.png", "the name of the input file")
+
+	// Out is the name of the output file
+	Out = flag.String("out", "out.png", "the name of the output file")
 )
 
 func main() {
+	flag.Parse()
+
 	rand.Seed(time.Now().UnixNano())
 
-	reader, err := os.Open("ref.png")
+	reader, err := os.Open(*In)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,13 +60,13 @@ func main() {
 
 	fmt.Println("started training...")
 
-	for i := 0; i < Iterations; i++ {
+	for i := 0; i < *Iterations; i++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 				ins := neighbours(m, bounds, x, y)
 				ar, ag, ab := at(m, bounds, x, y)
 
-				learn.Learn(n, ins, []float64{ar, ag, ab}, LearnRate)
+				learn.Learn(n, ins, []float64{ar, ag, ab}, *LearnRate)
 			}
 		}
 		fmt.Printf("finished iteration %d/%d    \r", i+1, Iterations)
@@ -65,11 +74,11 @@ func main() {
 
 	fmt.Println("\ndone! generating output image...")
 
-	imgRect := image.Rect(0, 0, OutWidth, OutHeight)
+	imgRect := image.Rect(0, 0, *OutWidth, *OutHeight)
 	img := image.NewRGBA(imgRect)
 
-	for x := 0; x < OutWidth; x++ {
-		for y := 0; y < OutHeight; y++ {
+	for x := 0; x < *OutWidth; x++ {
+		for y := 0; y < *OutHeight; y++ {
 			img.SetRGBA(x, y, color.RGBA{
 				uint8(rand.Float64() * 255),
 				uint8(rand.Float64() * 255),
@@ -79,11 +88,11 @@ func main() {
 		}
 	}
 
-	for i := 0; i < OutGenerations; i++ {
+	for i := 0; i < *OutGenerations; i++ {
 		newImg := image.NewRGBA(imgRect)
 
-		for x := 0; x < OutWidth; x++ {
-			for y := 0; y < OutHeight; y++ {
+		for x := 0; x < *OutWidth; x++ {
+			for y := 0; y < *OutHeight; y++ {
 				ins := neighbours(img, imgRect, x, y)
 				outs := n.Calculate(ins)
 				newImg.SetRGBA(x, y, color.RGBA{
@@ -99,7 +108,7 @@ func main() {
 		fmt.Printf("finished iteration %d/%d    \r", i+1, OutGenerations)
 	}
 
-	out, err := os.Create("./out.png")
+	out, err := os.Create(*Out)
 	if err != nil {
 		log.Fatal(err)
 	}

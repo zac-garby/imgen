@@ -16,14 +16,11 @@ It uses a neural network with 24 inputs and 3 outputs (and 2 hidden layers, each
 # download imgen
 go get github.com/zac-garby/imgen
 
-# run the program
-# you should have a file called `ref.png` in your working directory
-# this file will be the training image for the network
-imgen
+# get help on the flags
+imgen -help
 
-# open the output image
-# $ open only works on macOS
-open out.png
+# assuming you have a file called `ref.png` and the default options are okay:
+imgen
 ```
 
 ## Possible improvements
