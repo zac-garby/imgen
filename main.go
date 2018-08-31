@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/NOX73/go-neural"
-	"github.com/NOX73/go-neural/learn"
+	"github.com/NOX73/go-neural/engine"
 )
 
 var (
@@ -58,8 +58,11 @@ func main() {
 
 	bounds := m.Bounds()
 
-	n := neural.NewNetwork(neighbourNum()*3, []int{16, 16, 3})
+	n := neural.NewNetwork(neighbourNum()*3, []int{neighbourNum()*2, neighbourNum()*2, 3})
 	n.RandomizeSynapses()
+
+	engine := engine.New(n)
+	engine.Start()
 
 	fmt.Println("started training...")
 
@@ -69,7 +72,7 @@ func main() {
 				ins := neighbours(m, bounds, x, y)
 				ar, ag, ab := at(m, bounds, x, y)
 
-				learn.Learn(n, ins, []float64{ar, ag, ab}, *LearnRate)
+				engine.Learn(ins, []float64{ar, ag, ab}, *LearnRate)
 			}
 		}
 		fmt.Printf("finished iteration %d/%d    \r", i+1, *Iterations)
@@ -97,7 +100,7 @@ func main() {
 		for x := 0; x < *OutWidth; x++ {
 			for y := 0; y < *OutHeight; y++ {
 				ins := neighbours(img, imgRect, x, y)
-				outs := n.Calculate(ins)
+				outs := engine.Calculate(ins)
 				newImg.SetRGBA(x, y, color.RGBA{
 					uint8(outs[0] * 255),
 					uint8(outs[1] * 255),
